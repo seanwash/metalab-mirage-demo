@@ -1,5 +1,5 @@
-html, body, #root {
-  height: 100%;
+body {
+  background: #e5e7ea; /* bg-gray-200 from Tailwind */
 }
 
 body {
