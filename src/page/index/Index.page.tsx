@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useRouteMatch } from 'react-router-dom';
 
-import { Pokemon, Ability, Move, Type } from '../../lib/types';
+import { Pokemon, Move, Type } from '../../lib/types';
 
 const IndexPage: React.FC = () => {
   const [pokemon, setPokemon] = useState<Pokemon[]>([]);
@@ -19,7 +19,7 @@ const IndexPage: React.FC = () => {
     fetchData();
   }, [match]);
 
-  const arrayToSentence = (array: Ability[] | Move[] | Type[], key: 'name') => {
+  const arrayToSentence = (array: Move[] | Type[], key: 'name') => {
     return array.map((item) => item[key]).join(', ');
   };
 
@@ -52,12 +52,8 @@ const IndexPage: React.FC = () => {
                       Types
                     </th>
                     <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                      Abilities
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                       Moves
                     </th>
-                    <th className="px-6 py-3 bg-gray-50" />
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -70,16 +66,7 @@ const IndexPage: React.FC = () => {
                         {arrayToSentence(pokemon.types, 'name')}
                       </td>
                       <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
-                        {arrayToSentence(pokemon.abilities, 'name')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
                         {arrayToSentence(pokemon.moves, 'name')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-no-wrap text-right text-sm leading-5 font-medium">
-                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                        <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                          Edit
-                        </a>
                       </td>
                     </tr>
                   ))}

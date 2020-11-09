@@ -1,13 +1,34 @@
 import React, { useState } from 'react';
 import Banner from '../Banner';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+
+import { Move, Type } from '../../lib/types';
 
 const PokemonForm: React.FC = () => {
   const [name, setName] = useState<string>();
   const [baseExperience, setBaseExperience] = useState<string | undefined>();
   const [height, setHeight] = useState<string | undefined>();
   const [width, setWidth] = useState<string | undefined>();
+  const [typeIds, setTypeIds] = useState<string[] | undefined>();
+  const [moveIds, setMoveIds] = useState<string[] | undefined>();
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [types, setTypes] = useState<Type[]>([]);
+  const [moves, setMoves] = useState<Move[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const typesResponse = await fetch('/api/v2/types');
+      const { types } = await typesResponse.json();
+      setTypes(types);
+
+      const movesResponse = await fetch('/api/v2/moves');
+      const { moves } = await movesResponse.json();
+      setMoves(moves);
+    };
+
+    fetchData();
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -15,15 +36,12 @@ const PokemonForm: React.FC = () => {
     setStatus('submitting');
 
     const requestBody = {
-      pokemon: {
-        name,
-        baseExperience,
-        height,
-        width,
-        typeIds: [1],
-        abilityIds: [1],
-        moveIds: [1],
-      },
+      name,
+      baseExperience,
+      height,
+      width,
+      typeIds,
+      moveIds,
     };
 
     const response = await fetch('/api/v2/pokemon', {
@@ -117,6 +135,47 @@ const PokemonForm: React.FC = () => {
                       placeholder="42"
                       onChange={(event) => setWidth(event.target.value)}
                     />
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <label htmlFor="types" className="block text-sm leading-5 font-medium text-gray-700">
+                    Type
+                  </label>
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <select
+                      className="block form-select w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                      name="types"
+                      id="types"
+                      onChange={(event) => setTypeIds([event.target.value])}
+                    >
+                      {types.length &&
+                        types.map((type) => (
+                          <option key={type.id} value={type.id}>
+                            {type.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-6">
+                  <label htmlFor="types" className="block text-sm leading-5 font-medium text-gray-700">
+                    Move
+                  </label>
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <select
+                      className="block form-select w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                      name="move"
+                      id="move"
+                      onChange={(event) => setMoveIds([event.target.value])}
+                    >
+                      {moves.length &&
+                        moves.map((move) => (
+                          <option key={move.id} value={move.id}>
+                            {move.name}
+                          </option>
+                        ))}
+                    </select>
                   </div>
                 </div>
               </div>

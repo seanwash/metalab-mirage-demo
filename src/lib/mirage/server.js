@@ -18,7 +18,7 @@ export function makeServer({ environment = 'test' }) {
     serializers: {
       application: RestSerializer,
       pokemon: RestSerializer.extend({
-        include: ['types', 'abilities', 'moves'],
+        include: ['types', 'moves'],
         embed: true,
       }),
     },
@@ -29,16 +29,11 @@ export function makeServer({ environment = 'test' }) {
     // See: https://miragejs.com/api/classes/model/
     //
     models: {
-      ability: Model.extend({
-        pokemon: hasMany(),
-      }),
-
       move: Model.extend({
         pokemon: hasMany(),
       }),
 
       pokemon: Model.extend({
-        abilities: hasMany(),
         moves: hasMany(),
         types: hasMany(),
       }),
@@ -52,12 +47,6 @@ export function makeServer({ environment = 'test' }) {
     // See: https://miragejs.com/docs/getting-started/overview/#factories
     //
     factories: {
-      ability: Factory.extend({
-        name(i) {
-          return `Ability ${i + 1}`;
-        },
-      }),
-
       move: Factory.extend({
         name(i) {
           return `Move ${i + 1}`;
@@ -85,12 +74,6 @@ export function makeServer({ environment = 'test' }) {
           },
         }),
 
-        withAbilities: trait({
-          afterCreate(pokemon, server) {
-            server.createList('ability', 3, { pokemon: [pokemon] });
-          },
-        }),
-
         withMoves: trait({
           afterCreate(pokemon, server) {
             server.createList('move', 3, { pokemon: [pokemon] });
@@ -115,7 +98,7 @@ export function makeServer({ environment = 'test' }) {
     // See: https://miragejs.com/docs/main-concepts/factories/
     //
     seeds(server) {
-      server.createList('pokemon', 20, 'withTypes', 'withMoves', 'withAbilities');
+      server.createList('pokemon', 20, 'withTypes', 'withMoves');
     },
 
     //
@@ -131,22 +114,34 @@ export function makeServer({ environment = 'test' }) {
       this.namespace = '/api/v2';
 
       // Route Handlers → All of the standard REST methods are supported.
-      this.get('/abilities', (schema, _request) => {
-        return schema.abilities.all();
-      });
-
       this.get('/pokemon', (schema, request) => {
         // A simple pagination example.
         let page = request.queryParams.page || 1;
-        let perPage = 10;
+        let perPage = 15;
         let end = perPage * page;
         let start = end - perPage;
 
-        return schema.pokemon.all().slice(start, end);
+        return (
+          schema.pokemon
+            .all()
+            // Sort by ID descending. Internally, Mirage stores IDs as strings.
+            .sort((a, b) => (parseInt(b.id) > parseInt(a.id) ? 1 : -1))
+            .slice(start, end)
+        );
+      });
+
+      // A POST request handler that creates a new Pokemon with a given request body.
+      this.post('/pokemon', (schema, request) => {
+        let attrs = JSON.parse(request.requestBody);
+        return schema.pokemon.create(attrs);
       });
 
       // A Resource shorthand also exists.
-      this.resource('types', { only: ['index'] }, { timing: 2000 });
+      this.resource('types', { only: ['index'] });
+      // Timing can be used to simulate slow networks.
+      this.resource('moves', { only: ['index', 'show'] }, { timing: 2000 });
+
+      this.passthrough();
     },
   });
 }

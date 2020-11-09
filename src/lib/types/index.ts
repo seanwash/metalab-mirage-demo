@@ -4,16 +4,10 @@ export interface Pokemon {
   height: number;
   weight: number;
   types: Type[];
-  abilities: Ability[];
   moves: Move[];
 }
 
 export interface Type {
-  id: number;
-  name: string;
-}
-
-export interface Ability {
   id: number;
   name: string;
 }
