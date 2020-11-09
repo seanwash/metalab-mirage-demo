@@ -115,15 +115,26 @@ export function makeServer({ environment = 'test' }) {
 
       // Route Handlers → All of the standard REST methods are supported.
       this.get('/pokemon', (schema, request) => {
-        // A simple pagination example.
+        let results;
+
+        //  Example pagination.
         let page = request.queryParams.page || 1;
         let perPage = 15;
         let end = perPage * page;
         let start = end - perPage;
 
+        // Example keyword searching.
+        const keywordSearch = request.queryParams.keyword
+
+       if(keywordSearch) {
+         results = schema.pokemon.all().filter(pokemon => pokemon.name.toLowerCase().indexOf(keywordSearch.toLowerCase()) >= 0)
+       }  else {
+         results = schema.pokemon.all()
+       }
+
+       // Example sort order change of results.
         return (
-          schema.pokemon
-            .all()
+          results
             // Sort by ID descending. Internally, Mirage stores IDs as strings.
             .sort((a, b) => (parseInt(b.id) > parseInt(a.id) ? 1 : -1))
             .slice(start, end)
