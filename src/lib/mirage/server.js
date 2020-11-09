@@ -1,7 +1,6 @@
 import { inflections } from 'inflected';
 import { createServer, Model, Factory, trait, hasMany, RestSerializer } from 'miragejs';
 
-// TODO: Move this into a new file.
 inflections('en', function (inflect) {
   inflect.irregular('pokemon', 'pokemon');
 });
@@ -123,17 +122,31 @@ export function makeServer({ environment = 'test' }) {
     // Routes defines the available API routes and methods that are accessible
     // via the client.
     //
-    // See:
+    // See: https://miragejs.com/docs/main-concepts/route-handlers/#gatsby-focus-wrapper
+    // Note: You can also control the passthrough routes → https://miragejs.com/api/classes/server/#passthrough
     //
     routes() {
       // Configure the namespace to match the production API so that the base
       // API_URL can be swapped via an env variable.
       this.namespace = '/api/v2';
 
-      this.resource('pokemon', { only: ['index', 'create'] });
+      // Route Handlers → All of the standard REST methods are supported.
+      this.get('/abilities', (schema, _request) => {
+        return schema.abilities.all();
+      });
 
-      // TODO: Demonstrate Passthrough
-      //       https://miragejs.com/api/classes/server/#passthrough
+      this.get('/pokemon', (schema, request) => {
+        // A simple pagination example.
+        let page = request.queryParams.page || 1;
+        let perPage = 10;
+        let end = perPage * page;
+        let start = end - perPage;
+
+        return schema.pokemon.all().slice(start, end);
+      });
+
+      // A Resource shorthand also exists.
+      this.resource('types', { only: ['index'] }, { timing: 2000 });
     },
   });
 }

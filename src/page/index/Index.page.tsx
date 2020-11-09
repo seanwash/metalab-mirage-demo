@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useRouteMatch } from 'react-router-dom';
 
 import { Pokemon, Ability, Move, Type } from '../../lib/types';
 
 const IndexPage: React.FC = () => {
   const [pokemon, setPokemon] = useState<Pokemon[]>([]);
+  const match = useRouteMatch();
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('/api/v2/pokemon');
+      const search = window.location.search;
+      const response = await fetch(`/api/v2/pokemon${search}`);
       const { pokemon } = await response.json();
       // TODO: Is there a way to default the sort order of a collection?
-      setPokemon(pokemon.reverse());
+      setPokemon(pokemon);
     };
 
     fetchData();
-  }, []);
+  }, [match]);
 
   const arrayToSentence = (array: Ability[] | Move[] | Type[], key: 'name') => {
     return array.map((item) => item[key]).join(', ');
@@ -83,6 +85,28 @@ const IndexPage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+              <nav className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="flex-1 flex justify-between sm:justify-end">
+                  <Link
+                    to={{
+                      pathname: '/',
+                      search: '?page=1',
+                    }}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:text-gray-500 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150"
+                  >
+                    Previous
+                  </Link>
+                  <Link
+                    to={{
+                      pathname: '/',
+                      search: '?page=2',
+                    }}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:text-gray-500 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150"
+                  >
+                    Next
+                  </Link>
+                </div>
+              </nav>
             </div>
           </div>
         </div>
